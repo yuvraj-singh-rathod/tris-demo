@@ -1,0 +1,24 @@
+relationship 41b88ca6-9bd0-4782-b0dc-8fb3b40f19f4
+	joinOnDateBehavior: datePartOnly
+	fromColumn: VW_BIDateDimentionValue.date
+	toColumn: LocalDateTable_10c5bc72-e61d-495f-99a5-f83b5f97071e.Date
+
+relationship 4fe05d91-3cef-418c-a368-ad067e2b414f
+	fromColumn: Vw_Inventory_Aging_report.DatePhysical
+	toColumn: VW_BIDateDimentionValue.date
+
+relationship 27133e62-1f3e-4a21-b4b5-155e6cbae93c
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Vw_Inventory_Aging_report.MODIFIEDDATETIME
+	toColumn: LocalDateTable_affee1d6-8968-4c01-8223-bdd82d4604ef.Date
+
+relationship e4b07349-4087-4f7f-9b54-507bd4447e77
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Vw_Inventory_Aging_report.CREATEDDATETIME
+	toColumn: LocalDateTable_a8bca540-d530-4154-aae4-0e94d28b2620.Date
+
+relationship 7b6a4159-f715-4b5c-8fa5-5857cf105084
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Vw_Inventory_Aging_report.INVENTDIMENSION9
+	toColumn: LocalDateTable_bdde352d-f122-445e-86d7-5818eb0c3866.Date
+

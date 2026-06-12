@@ -1,0 +1,24 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["Vw_Inventory_Aging_report","VW_BIDateDimentionValue"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBIDesktopVersion = 2.121.903.0 (23.09)
+
+ref table Vw_Inventory_Aging_report
+ref table DateTableTemplate_68410198-115e-462f-8952-17ba549d827a
+ref table VW_BIDateDimentionValue
+ref table LocalDateTable_10c5bc72-e61d-495f-99a5-f83b5f97071e
+ref table LocalDateTable_affee1d6-8968-4c01-8223-bdd82d4604ef
+ref table LocalDateTable_a8bca540-d530-4154-aae4-0e94d28b2620
+ref table LocalDateTable_bdde352d-f122-445e-86d7-5818eb0c3866
+
+ref cultureInfo en-US
+

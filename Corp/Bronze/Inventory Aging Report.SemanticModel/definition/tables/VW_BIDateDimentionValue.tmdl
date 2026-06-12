@@ -1,0 +1,36 @@
+table VW_BIDateDimentionValue
+	lineageTag: 6a11d97c-9cb0-427d-a535-4ea4dd78cd0f
+
+	column date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: af51fa5b-a403-47bf-8d64-fe76d8e747a7
+		summarizeBy: none
+		sourceColumn: date
+
+		variation Variation
+			isDefault
+			relationship: 41b88ca6-9bd0-4782-b0dc-8fb3b40f19f4
+			defaultHierarchy: LocalDateTable_10c5bc72-e61d-495f-99a5-f83b5f97071e.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition VW_BIDateDimentionValue-6ec1b1c1-5743-446f-ba0a-04d43c7041c8 = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("DynatechUAT-1", "AxDB_A"),
+				    dbo_VW_BIDateDimentionValue = Source{[Schema="dbo",Item="VW_BIDateDimentionValue"]}[Data]
+				in
+				    dbo_VW_BIDateDimentionValue
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+
