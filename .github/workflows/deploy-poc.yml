@@ -23,8 +23,8 @@ jobs:
       - name: Trigger Fabric Notebook
         run: |
           RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/items/${{ secrets.FABRIC_NOTEBOOK_ID }}/jobs/instances?jobType=RunNotebook \
+            https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/items/${{ secrets.FABRIC_NOTEBOOK_ID }}/jobs/instances \
             -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
             -H "Content-Type: application/json" \
-            -d '{}')
+            -d '{"jobType": "RunNotebook"}')
           echo "$RESPONSE"
