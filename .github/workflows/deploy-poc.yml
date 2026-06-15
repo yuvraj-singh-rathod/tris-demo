@@ -5,35 +5,26 @@ on:
     branches: [main]
 
 jobs:
-  trigger-deployment-pipeline:
+  trigger-notebook:
     runs-on: ubuntu-latest
     steps:
-      - name: Get token using user credentials
+      - name: Get token using Service Principal
         id: token
         run: |
           TOKEN=$(curl -s -X POST \
             https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}/oauth2/v2.0/token \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
-            -d "scope=https://analysis.windows.net/powerbi/api/.default" \
-            -d "username=${{ secrets.FABRIC_USER_EMAIL }}" \
-            -d "password=${{ secrets.FABRIC_USER_PASSWORD }}" \
-            -d "grant_type=password" | jq -r .access_token)
+            -d "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+            -d "scope=https://api.fabric.microsoft.com/.default" \
+            -d "grant_type=client_credentials" | jq -r .access_token)
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
-      - name: Trigger Deployment Pipeline
+      - name: Trigger Fabric Notebook
         run: |
           RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            https://api.powerbi.com/v1.0/myorg/pipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deployAll \
+            https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/items/${{ secrets.FABRIC_NOTEBOOK_ID }}/jobs/instances?jobType=RunNotebook \
             -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
             -H "Content-Type: application/json" \
-            -d '{
-              "sourceStageOrder": 0,
-              "isBackwardDeployment": false,
-              "updateAppSettings": {"updateAppInTargetWorkspace": false},
-              "options": {
-                "allowOverwriteArtifact": true,
-                "allowCreateArtifact": true
-              }
-            }')
+            -d '{}')
           echo "$RESPONSE"
