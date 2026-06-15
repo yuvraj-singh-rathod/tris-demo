@@ -15,9 +15,17 @@ jobs:
             https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}/oauth2/v2.0/token \
             -d client_id=${{ secrets.AZURE_CLIENT_ID }} \
             -d client_secret=${{ secrets.AZURE_CLIENT_SECRET }} \
-            -d scope=https://analysis.windows.net/powerbi/api/.default \
+            -d scope=https://api.fabric.microsoft.com/.default \
             -d grant_type=client_credentials | jq -r .access_token)
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Get latest Git commit hash
+        id: commithash
+        run: |
+          HASH=$(curl -s \
+            https://api.github.com/repos/${{ github.repository }}/commits/main \
+            -H "Authorization: Bearer ${{ github.token }}" | jq -r .sha)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
 
       - name: Sync dev workspace from Git
         run: |
@@ -25,10 +33,16 @@ jobs:
             https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_DEV_WORKSPACE_ID }}/git/updateFromGit \
             -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
             -H "Content-Type: application/json" \
-            -d '{"conflictResolution": {"conflictResolutionPolicy": "PreferRemote", "remoteCommitHash": "HEAD"}}')
+            -d '{
+              "conflictResolution": {
+                "conflictResolutionType": "Workspace",
+                "conflictResolutionPolicy": "PreferRemote"
+              },
+              "remoteCommitHash": "${{ steps.commithash.outputs.hash }}"
+            }')
           echo "$RESPONSE"
 
-  deploy-to-prod:
+  check-pipeline-status:
     needs: sync-dev-workspace
     runs-on: ubuntu-latest
     steps:
@@ -39,20 +53,13 @@ jobs:
             https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}/oauth2/v2.0/token \
             -d client_id=${{ secrets.AZURE_CLIENT_ID }} \
             -d client_secret=${{ secrets.AZURE_CLIENT_SECRET }} \
-            -d scope=https://analysis.windows.net/powerbi/api/.default \
+            -d scope=https://api.fabric.microsoft.com/.default \
             -d grant_type=client_credentials | jq -r .access_token)
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
-      - name: Trigger Power BI Deployment Pipeline
+      - name: Get pipeline status
         run: |
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            https://api.powerbi.com/v1.0/myorg/pipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deployAll \
-            -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "sourceStageOrder": 0,
-              "isBackwardDeployment": false,
-              "updateAppSettings": {"updateAppInTargetWorkspace": false},
-              "options": {"allowOverwriteArtifact": true, "allowCreateArtifact": true}
-            }')
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET \
+            https://api.fabric.microsoft.com/v1/pipelines/${{ secrets.FABRIC_PIPELINE_ID }} \
+            -H "Authorization: Bearer ${{ steps.token.outputs.token }}")
           echo "$RESPONSE"
