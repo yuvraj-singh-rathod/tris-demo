@@ -1,4 +1,4 @@
-# POC Test v5
+# POC Test - fabric-cicd approach
 name: Fabric POC Deploy
 
 on:
@@ -6,26 +6,45 @@ on:
     branches: [main]
 
 jobs:
-  trigger-notebook:
+  deploy-to-prod:
     runs-on: ubuntu-latest
     steps:
-      - name: Get token using Service Principal
-        id: token
-        run: |
-          TOKEN=$(curl -s -X POST \
-            https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}/oauth2/v2.0/token \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
-            -d "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
-            -d "scope=https://api.fabric.microsoft.com/.default" \
-            -d "grant_type=client_credentials" | jq -r .access_token)
-          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Trigger Fabric Notebook
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install fabric-cicd
         run: |
-          RESPONSE=$(curl -s -v -X POST \
-            "https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/items/${{ secrets.FABRIC_NOTEBOOK_ID }}/jobs/instances?jobType=RunNotebook" \
-            -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
-            -H "Content-Type: application/json" \
-            -d '{}')
-          echo "$RESPONSE"
+          python -m pip install --upgrade pip
+          pip install fabric-cicd
+
+      - name: Deploy to Prod workspace
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          python -c "
+          from fabric_cicd import FabricWorkspace, publish_all_items
+          from azure.identity import ClientSecretCredential
+
+          credential = ClientSecretCredential(
+              tenant_id='${{ secrets.AZURE_TENANT_ID }}',
+              client_id='${{ secrets.AZURE_CLIENT_ID }}',
+              client_secret='${{ secrets.AZURE_CLIENT_SECRET }}'
+          )
+
+          workspace = FabricWorkspace(
+              workspace_id='${{ secrets.FABRIC_PROD_WORKSPACE_ID }}',
+              credential=credential,
+              repository_directory='Corp/Bronze',
+              item_type_in_scope=['Lakehouse', 'Report', 'SemanticModel']
+          )
+
+          publish_all_items(workspace)
+          print('Deployment complete!')
+          "
