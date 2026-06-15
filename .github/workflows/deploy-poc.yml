@@ -1,3 +1,4 @@
+# POC Test v3
 name: Fabric POC Deploy
 
 on:
@@ -20,10 +21,11 @@ jobs:
             -d "grant_type=client_credentials" | jq -r .access_token)
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
-      - name: List all workspace items
+      - name: Trigger Fabric Notebook
         run: |
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET \
-            https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/items \
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+            https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/items/${{ secrets.FABRIC_NOTEBOOK_ID }}/jobs/instances \
             -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
-            -H "Content-Type: application/json")
+            -H "Content-Type: application/json" \
+            -d '{"jobType": "RunNotebook"}')
           echo "$RESPONSE"
