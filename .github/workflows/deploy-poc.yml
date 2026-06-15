@@ -42,7 +42,7 @@ jobs:
               workspace_id='${{ secrets.FABRIC_PROD_WORKSPACE_ID }}',
               token_credential=credential,
               repository_directory='Corp/Bronze',
-              item_type_in_scope=['Lakehouse', 'Report', 'SemanticModel']
+              item_type_in_scope=['Lakehouse', 'Notebook', 'Report', 'SemanticModel']
           )
 
           publish_all_items(workspace)
