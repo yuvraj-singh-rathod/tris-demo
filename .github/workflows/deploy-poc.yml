@@ -40,7 +40,7 @@ jobs:
 
           workspace = FabricWorkspace(
               workspace_id='${{ secrets.FABRIC_PROD_WORKSPACE_ID }}',
-              credential=credential,
+              token_credential=credential,
               repository_directory='Corp/Bronze',
               item_type_in_scope=['Lakehouse', 'Report', 'SemanticModel']
           )
