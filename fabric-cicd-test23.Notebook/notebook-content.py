@@ -14,17 +14,7 @@
 # Welcome to your new notebook
 # Type here in the cell editor to add code!
 
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-hello
+Hello 123
 
 # METADATA ********************
 
